@@ -1,0 +1,13 @@
+{
+  "team": "germany",
+  "selected_prod_types": {
+    "germany": [
+      "failure"
+    ]
+  },
+  "updated_capacities_prod_types": {
+    "germany": {
+      "failure": 10000000.0
+    }
+  }
+}

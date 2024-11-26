@@ -1,0 +1,11 @@
+{
+  "team": "france",
+  "selected_prod_types": {
+    "france": [
+      "all"
+    ]
+  },
+  "updated_capacities_prod_types": {
+    "france": {}
+  }
+}

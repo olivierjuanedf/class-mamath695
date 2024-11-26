@@ -8,6 +8,11 @@ import pandas as pd
 from long_term_uc.utils.plot import simple_plot
 
 
+def set_uc_ts_name(full_data_type: tuple, country: str, year: int, climatic_year: int):
+    data_type_prefix = "-".join(list(full_data_type))
+    return f"{data_type_prefix}_{country}_{year}_cy{climatic_year}"
+
+    
 @dataclass
 class UCTimeseries:
     name: str = None
@@ -21,16 +26,25 @@ class UCTimeseries:
         self.values = np.array(df[col_name])
         if unit is not None:
             self.unit = unit
+
+    def set_plot_ylabel(self) -> str:
+        ylabel = self.data_type[0].capitalize()
+        if self.unit is not None:
+            ylabel += f" ({self.unit.upper()})"
+        return ylabel
     
+    def set_plot_title(self) -> str:
+        return "-".join(list(self.data_type)).capitalize()
+
     def plot(self, output_dir: str):
         name_label = self.name.capitalize()
-        fig_file = os.path.join(output_dir, f"{name_label}.png")
+        fig_file = os.path.join(output_dir, f"{name_label.lower()}.png")
         if self.dates is not None:
             x = self.dates
         else:
             x = np.arange(len(self.values)) + 1
-        simple_plot(x=x, y=self.values, fig_file=fig_file, title=name_label, xlabel=xlabel, 
-                    ylabel=name_label)
+        simple_plot(x=x, y=self.values, fig_file=fig_file, title=self.set_plot_title(), 
+                    xlabel="Time-slots", ylabel=self.set_plot_ylabel())
 
     def plot_duration_curve(self, output_dir: str, as_a_percentage: bool = False) -> np.ndarray:
         # sort values in descending order
@@ -43,10 +57,10 @@ class UCTimeseries:
         else:
             xlabel = "Duration (nber of time-slots - hours)"
         name_label = self.name.capitalize()
-        fig_file = os.path.join(output_dir, f"{name_label}_duration_curve.png")
+        fig_file = os.path.join(output_dir, f"{name_label.lower()}_duration_curve.png")
         simple_plot(x=duration_curve, y=vals_desc_order, fig_file=fig_file,
-                    title=f"{name_label} duration curve", xlabel=xlabel, 
-                    ylabel=name_label)
+                    title=f"{self.set_plot_title()} duration curve", xlabel=xlabel, 
+                    ylabel=self.set_plot_ylabel())
     
     def plot_rolling_horizon_avg(self):
         bob = 1

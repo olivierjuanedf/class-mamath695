@@ -1,8 +1,11 @@
+import numpy as np
+
+from long_term_uc.common.constants_datatypes import DATATYPE_NAMES, UNITS_PER_DT
 from long_term_uc.common.long_term_uc_io import OUTPUT_DATA_ANALYSIS_FOLDER
 from long_term_uc.utils.basic_utils import get_period_str
 from long_term_uc.include.dataset import Dataset
 from long_term_uc.include.dataset_analyzer import ANALYSIS_TYPES
-from long_term_uc.include.uc_timeseries import UCTimeseries
+from long_term_uc.include.uc_timeseries import UCTimeseries, set_uc_ts_name
 from long_term_uc.utils.read import read_and_check_data_analysis_params, read_and_check_uc_run_params
 
 
@@ -12,6 +15,9 @@ usage_params, eraa_data_descr, uc_run_params = read_and_check_uc_run_params()
 
 uc_period_msg = get_period_str(period_start=uc_run_params.uc_period_start, 
                                period_end=uc_run_params.uc_period_end)
+
+date_col = "date"
+value_col = "value"
 
 # loop over the different cases to be analysed
 for elt_analysis in data_analyses:
@@ -39,8 +45,20 @@ for elt_analysis in data_analyses:
                                     aggreg_prod_types_def=eraa_data_descr.aggreg_prod_types_def,
                                     datatypes_selec=elt_analysis.data_type, subdt_selec=subdt_selec)
     # create Unit Commitment Timeseries object from data read
-    uc_timeseries = UCTimeseries(name=f"{elt_analysis.data_type}-{elt_analysis.country}", 
-                                 data_type=elt_analysis.get_full_datatype())
+    if elt_analysis.data_type == DATATYPE_NAMES.demand:
+        current_df = eraa_dataset.demand[elt_analysis.country]
+        
+    elif elt_analysis.data_type == DATATYPE_NAMES.capa_factor:
+        current_df = eraa_dataset.agg_cf_data[elt_analysis.country]
+    dates = list(current_df[date_col])
+    dates = [elt_date.replace(year=elt_analysis.year) for elt_date in dates]
+    values = np.array(current_df[value_col])
+
+    current_full_dt = elt_analysis.get_full_datatype()
+    uc_ts_name = set_uc_ts_name(full_data_type=current_full_dt, country=elt_analysis.country, 
+                                year=elt_analysis.year, climatic_year=elt_analysis.climatic_year)
+    uc_timeseries = UCTimeseries(name=uc_ts_name, data_type=current_full_dt, dates=dates, 
+                                 values=values, unit=UNITS_PER_DT[elt_analysis.data_type])
     # And apply calc./plot
     if elt_analysis.analysis_type == ANALYSIS_TYPES.plot:
         uc_timeseries.plot(output_dir=OUTPUT_DATA_ANALYSIS_FOLDER)

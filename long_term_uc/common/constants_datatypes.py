@@ -19,3 +19,4 @@ PROD_TYPES_PER_DT = {DATATYPE_NAMES.capa_factor: ["csp_nostorage", "lfsolarpv", 
                                                      "solar_(photovoltaic)", "solar_(thermal)", 
                                                      "wind_offshore", "wind_onshore"]
                                                      }
+UNITS_PER_DT = {DATATYPE_NAMES.demand: "mw", DATATYPE_NAMES.capa_factor: "%"}

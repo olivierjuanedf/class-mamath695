@@ -149,7 +149,7 @@ class Dataset:
                 else:
                     self.agg_cf_data[country] = \
                         set_aggreg_cf_prod_types_data(df_cf_list=df_res_cf_list, pt_agg_col=prod_type_agg_col, date_col=date_col,
-                                                    val_col=value_col)
+                                                      val_col=value_col)
 
             if DATATYPE_NAMES.installed_capa in datatypes_selec:            
                 # get installed generation capacity data

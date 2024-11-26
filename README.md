@@ -1,9 +1,9 @@
-# Class Title
+# SupEnR 2024: Planning the European Electric System
 
 ## Requirements 
 
 * a Github account: If not the case, go https://github.com/ and sign up
-* enroll the classroom as a student: go ==missing url==
+* enroll the classroom as a student: go [enroll](https://classroom.github.com/a/M_bX8C28)
 ![step 1n, enrolling](/.assets/img/enroll1.png)
 * Click to accept the assignment
 

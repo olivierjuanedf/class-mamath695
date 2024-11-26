@@ -105,7 +105,7 @@ TO COME
 
 <details>
 
-* connect to ENPC-VISITEURS or maybe eduroam wifi
+* connect to the university wifi or maybe eduroam wifi
 * go and register here with you student email: https://portal.gurobi.com/iam/register
   ![registration page 1/3](/.assets/img/gurobi_registration.png)
 * register as a student

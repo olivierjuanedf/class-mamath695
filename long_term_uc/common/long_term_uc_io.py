@@ -62,12 +62,9 @@ INPUT_FUNC_PARAMS_SUBFOLDER = f"{INPUT_FOLDER}/functional_params"
 INPUT_DATA_ANALYSIS_SUBFOLDER = f"{INPUT_LT_UC_SUBFOLDER}/data_analysis"
 INTERCO_STR_SEP = "2"
 INPUT_CY_STRESS_TEST_SUBFOLDER = "cy_stress-test"
-# first date in ERAA data (fictive 364 days calendar)
-MIN_DATE_IN_DATA = datetime(year=1900, month=1, day=1)
-# first date NOT in ERAA data (fictive 364 days calendar)
-MAX_DATE_IN_DATA = datetime(year=1901, month=1, day=1)
 OUTPUT_DATA_FOLDER = "output/long_term_uc/data"
 OUTPUT_FIG_FOLDER = "output/long_term_uc/figures"
+OUTPUT_DATA_ANALYSIS_FOLDER = "output/long_term_uc/input_data_analysis"
 
 
 def get_json_usage_params_file() -> str:

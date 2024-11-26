@@ -1,19 +1,21 @@
 {
-    "data_analysis_list": [
-      [
-        "plot",
-        "demand",
-        "france",
-        2025,
-        1989
-      ],
-      [
-        "plot",
-        "res_capa-factors",
-        "solar_pv",
-        "italy",
-        2025,
-        1989
-      ]
-    ]
-  }
+  "data_analysis_list": [
+    {
+      "analysis_type": "plot",
+      "data_type": "demand",
+      "country": "france",
+      "year": 2025,
+      "climatic_year": 1983,
+      "period_start": "1900/1/15",
+      "period_end": "1900/1/29"
+    },
+    {
+      "analysis_type": "plot",
+      "data_type": "res_capa-factors",
+      "data_subtype": "solar_pv",
+      "country": "italy",
+      "year": 2025,
+      "climatic_year": 1989
+    }
+  ]
+}

@@ -128,20 +128,8 @@ def read_and_check_data_analysis_params() -> List[DataAnalysis]:
 
     json_data_analysis_params = check_and_load_json_file(json_file=json_data_analysis_params_file,
                                                          file_descr="JSON data analysis params")
-    dict_keys = ORDERED_DATA_ANALYSIS_ATTRS
-    n_keys = len(dict_keys)
-    dict_keys_wo_subdt = deepcopy(dict_keys)
-    dict_keys_wo_subdt.remove(DATA_SUBTYPE_KEY)
     data_analysis_params = json_data_analysis_params["data_analysis_list"]
-    data_analyses = []
-    for param_vals in data_analysis_params:
-        # case including sub datatype, e.g. production type
-        if len(param_vals) == n_keys:
-            current_keys = dict_keys
-        else:
-            current_keys = dict_keys_wo_subdt
-        dict_params = dict(zip(current_keys, param_vals))
-        data_analyses.append(DataAnalysis(**dict_params))
+    data_analyses = [DataAnalysis(**param_vals) for param_vals in data_analysis_params]
     # check types
     for elt_analysis in data_analyses:
         elt_analysis.check_types()

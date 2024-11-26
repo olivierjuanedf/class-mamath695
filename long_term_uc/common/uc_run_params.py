@@ -3,14 +3,11 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Union
 
 from long_term_uc.common.constants_extract_eraa_data import ERAADatasetDescr
+from long_term_uc.common.constants_temporal import DATE_FORMAT_IN_JSON, MIN_DATE_IN_DATA, \
+    MAX_DATE_IN_DATA, N_DAYS_UC_DEFAULT
 from long_term_uc.common.error_msgs import print_errors_list, print_out_msg
-from long_term_uc.common.long_term_uc_io import MIN_DATE_IN_DATA, MAX_DATE_IN_DATA
 from long_term_uc.utils.basic_utils import get_period_str, are_lists_eq
 from long_term_uc.utils.eraa_utils import set_interco_to_tuples
-
-
-DATE_FORMAT = "%Y/%m/%d"
-N_DAYS_UC_DEFAULT = 9
 
 
 def uncoherent_param_stop(param_errors: List[str]):
@@ -56,12 +53,12 @@ class UCRunParams:
         # if dates in str format, cast them as datetime
         # - setting end of period to default value if not provided
         if isinstance(self.uc_period_start, str):
-            self.uc_period_start = datetime.strptime(self.uc_period_start, DATE_FORMAT)
+            self.uc_period_start = datetime.strptime(self.uc_period_start, DATE_FORMAT_IN_JSON)
         if self.uc_period_end is None:
             self.uc_period_end = min(MAX_DATE_IN_DATA, self.uc_period_start + timedelta(days=N_DAYS_UC_DEFAULT))
             print(f"End of period set to default value: {self.uc_period_end:%Y/%m/%d} (period of {N_DAYS_UC_DEFAULT} days; with bound on 1900, Dec. 31th)")
         elif isinstance(self.uc_period_end, str):
-            self.uc_period_end = datetime.strptime(self.uc_period_end, DATE_FORMAT)
+            self.uc_period_end = datetime.strptime(self.uc_period_end, DATE_FORMAT_IN_JSON)
         # replace None and missing countries in dict of aggreg. prod. types
         for country in available_countries:
             if country not in self.selected_prod_types \
@@ -89,20 +86,9 @@ class UCRunParams:
     def set_is_stress_test(self, avail_cy_stress_test: List[int]):
         self.is_stress_test = self.selected_climatic_year in avail_cy_stress_test
 
-    def coherence_check(self, eraa_data_descr: ERAADatasetDescr, year: int):
+    def coherence_check_ty_and_cy(self, eraa_data_descr: ERAADatasetDescr, 
+                                  stop_if_error: bool = False) -> List[str]:
         errors_list = []
-        # check that there is no repetition of countries
-        countries_set = set(self.selected_countries)
-        if len(countries_set) < len(self.selected_countries):
-            errors_list.append("Repetition in selected countries") 
-
-        # check coherence of values with fixed params
-        # for selected countries
-        unknown_countries = list(countries_set - set(eraa_data_descr.available_countries))
-        if len(unknown_countries) > 0:
-            errors_list.append(f"Unknown selected country(ies): {unknown_countries}")
-
-        # for selected target and climatic years
         # check that unique value provided
         target_yr_msg = check_unique_int_value(param_name="target year", param_value=self.selected_target_year)
         if target_yr_msg is not None:
@@ -117,6 +103,26 @@ class UCRunParams:
             and (self.selected_climatic_year not in eraa_data_descr.available_climatic_years \
                  and self.selected_climatic_year not in eraa_data_descr.available_climatic_years_stress_test):
             errors_list.append(f"Unknown climatic year {self.selected_climatic_year}")
+        # stop if any error
+        if stop_if_error is True and len(errors_list) > 0:
+            uncoherent_param_stop(param_errors=errors_list)
+
+        return errors_list
+
+    def coherence_check(self, eraa_data_descr: ERAADatasetDescr, year: int):
+        # start by checking Target Year (TY) and Climatic Year (CY)
+        errors_list = self.coherence_check_ty_and_cy(eraa_data_descr=eraa_data_descr)
+    
+        # check that there is no repetition of countries
+        countries_set = set(self.selected_countries)
+        if len(countries_set) < len(self.selected_countries):
+            errors_list.append("Repetition in selected countries") 
+
+        # check coherence of values with fixed params
+        # for selected countries
+        unknown_countries = list(countries_set - set(eraa_data_descr.available_countries))
+        if len(unknown_countries) > 0:
+            errors_list.append(f"Unknown selected country(ies): {unknown_countries}")
 
         for elt_country, current_agg_pt in self.selected_prod_types.items():
             if current_agg_pt == ['all']:
@@ -151,11 +157,11 @@ class UCRunParams:
                 errors_list.append(f"Unknown/not available aggreg. prod. types {msg_suffix} {elt_country}: {unknown_agg_prod_types}")
 
         # check that both dates are in allowed period
-        allowed_period_msg = f"[{MIN_DATE_IN_DATA.strftime(DATE_FORMAT)}, {MAX_DATE_IN_DATA.strftime(DATE_FORMAT)}]"
+        allowed_period_msg = f"[{MIN_DATE_IN_DATA.strftime(DATE_FORMAT_IN_JSON)}, {MAX_DATE_IN_DATA.strftime(DATE_FORMAT_IN_JSON)}]"
         if not (MIN_DATE_IN_DATA <= self.uc_period_start <= MAX_DATE_IN_DATA):
-            errors_list.append(f"UC period start {self.uc_period_start.strftime(DATE_FORMAT)} not in allowed period {allowed_period_msg}")
+            errors_list.append(f"UC period start {self.uc_period_start.strftime(DATE_FORMAT_IN_JSON)} not in allowed period {allowed_period_msg}")
         if not (MIN_DATE_IN_DATA <= self.uc_period_end <= MAX_DATE_IN_DATA):
-            errors_list.append(f"UC period end {self.uc_period_end.strftime(DATE_FORMAT)} not in allowed period {allowed_period_msg}")
+            errors_list.append(f"UC period end {self.uc_period_end.strftime(DATE_FORMAT_IN_JSON)} not in allowed period {allowed_period_msg}")
 
         # updated fuel sources params -> check non-negative marginal cost and CO2 emission values
         for source, params in self.updated_fuel_sources_params.items():
@@ -169,3 +175,12 @@ class UCRunParams:
         else:
             print_out_msg(msg_level="info", msg="Modified LONG-TERM UC PARAMETERS ARE COHERENT!")
             print_out_msg(msg_level="info", msg=f"RUN CAN START with parameters: {str(self)}")
+
+    def set_countries(self, countries: List[str]):
+        self.selected_countries = countries
+
+    def set_target_year(self, year: int):
+        self.selected_target_year = year
+
+    def set_climatic_year(self, climatic_year: int):
+        self.selected_climatic_year = climatic_year

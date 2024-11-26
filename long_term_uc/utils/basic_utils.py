@@ -93,3 +93,7 @@ def lexico_compar_str(string1: str, string2: str, return_tuple: bool = False) ->
 
 def flatten_list_of_lists(list_of_lists: List[list]) -> list:
     return np.concatenate(list_of_lists).tolist()
+
+
+def get_intersection_of_lists(list1: list, list2: list) -> list:
+    return list(set(list1) & set(list2))

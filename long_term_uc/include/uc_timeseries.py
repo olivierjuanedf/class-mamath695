@@ -11,6 +11,7 @@ from long_term_uc.utils.plot import simple_plot
 @dataclass
 class UCTimeseries:
     name: str = None
+    data_type: tuple = None
     values: np.ndarray = None
     unit: str = None
     dates: List[datetime] = None
@@ -21,6 +22,16 @@ class UCTimeseries:
         if unit is not None:
             self.unit = unit
     
+    def plot(self, output_dir: str):
+        name_label = self.name.capitalize()
+        fig_file = os.path.join(output_dir, f"{name_label}.png")
+        if self.dates is not None:
+            x = self.dates
+        else:
+            x = np.arange(len(self.values)) + 1
+        simple_plot(x=x, y=self.values, fig_file=fig_file, title=name_label, xlabel=xlabel, 
+                    ylabel=name_label)
+
     def plot_duration_curve(self, output_dir: str, as_a_percentage: bool = False) -> np.ndarray:
         # sort values in descending order
         vals_desc_order = np.sort(self.values)[::-1]
@@ -36,6 +47,9 @@ class UCTimeseries:
         simple_plot(x=duration_curve, y=vals_desc_order, fig_file=fig_file,
                     title=f"{name_label} duration curve", xlabel=xlabel, 
                     ylabel=name_label)
+    
+    def plot_rolling_horizon_avg(self):
+        bob = 1
         
 
 def list_of_uc_timeseries_to_df(uc_timeseries: List[UCTimeseries]) -> pd.DataFrame:        

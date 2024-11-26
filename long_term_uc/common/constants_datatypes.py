@@ -6,6 +6,7 @@ class DatatypesNames:
     demand: str = "demand"
     capa_factor: str = "res_capa-factors"
     installed_capa: str = "generation_capas"
+    interco_capa: str = "intercos_capas"
 
 
 DATATYPE_NAMES = DatatypesNames()

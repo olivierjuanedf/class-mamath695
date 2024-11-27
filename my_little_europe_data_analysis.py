@@ -9,9 +9,8 @@ from long_term_uc.include.uc_timeseries import UCTimeseries, set_uc_ts_name
 from long_term_uc.utils.read import read_and_check_data_analysis_params, read_and_check_uc_run_params
 
 
-data_analyses = read_and_check_data_analysis_params()
-
 usage_params, eraa_data_descr, uc_run_params = read_and_check_uc_run_params()
+data_analyses = read_and_check_data_analysis_params(eraa_data_descr=eraa_data_descr)
 
 uc_period_msg = get_period_str(period_start=uc_run_params.uc_period_start, 
                                period_end=uc_run_params.uc_period_end)

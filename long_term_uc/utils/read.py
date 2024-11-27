@@ -11,7 +11,7 @@ from long_term_uc.common.constants_extract_eraa_data import USAGE_PARAMS_SHORT_N
     PypsaStaticParams, UsageParameters
 from long_term_uc.common.uc_run_params import UCRunParams
 from long_term_uc.common.error_msgs import print_out_msg
-from long_term_uc.include.dataset_analyzer import DataAnalysis, DATA_SUBTYPE_KEY, ORDERED_DATA_ANALYSIS_ATTRS
+from long_term_uc.include.dataset_analyzer import DataAnalysis
 from long_term_uc.utils.dir_utils import check_file_existence
 
 
@@ -121,7 +121,7 @@ def read_and_check_pypsa_static_params() -> PypsaStaticParams:
     return pypsa_static_params
 
 
-def read_and_check_data_analysis_params() -> List[DataAnalysis]:
+def read_and_check_data_analysis_params(eraa_data_descr: ERAADatasetDescr) -> List[DataAnalysis]:
     json_data_analysis_params_file = get_json_data_analysis_params_file()
     print_out_msg(msg_level="info", 
                   msg=f"Read and check data analysis parameters file; the ones modified in file {json_data_analysis_params_file}")
@@ -133,4 +133,6 @@ def read_and_check_data_analysis_params() -> List[DataAnalysis]:
     # check types
     for elt_analysis in data_analyses:
         elt_analysis.check_types()
+        elt_analysis.process()
+        elt_analysis.coherence_check(eraa_data_descr=eraa_data_descr)
     return data_analyses

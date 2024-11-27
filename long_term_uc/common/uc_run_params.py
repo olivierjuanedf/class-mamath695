@@ -5,13 +5,9 @@ from typing import Dict, List, Optional, Tuple, Union
 from long_term_uc.common.constants_extract_eraa_data import ERAADatasetDescr
 from long_term_uc.common.constants_temporal import DATE_FORMAT_IN_JSON, MIN_DATE_IN_DATA, \
     MAX_DATE_IN_DATA, N_DAYS_UC_DEFAULT
-from long_term_uc.common.error_msgs import print_errors_list, print_out_msg
+from long_term_uc.common.error_msgs import print_out_msg, uncoherent_param_stop
 from long_term_uc.utils.basic_utils import get_period_str, are_lists_eq
 from long_term_uc.utils.eraa_utils import set_interco_to_tuples
-
-
-def uncoherent_param_stop(param_errors: List[str]):
-    print_errors_list(error_name="in JSON params to be modif. file", errors_list=param_errors)
 
 
 def check_unique_int_value(param_name: str, param_value) -> Optional[str]:

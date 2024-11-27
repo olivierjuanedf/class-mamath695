@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from long_term_uc.common.constants_datatypes import DatatypesNames
+from long_term_uc.common.constants_extract_eraa_data import ERAADatasetDescr
 from long_term_uc.common.constants_temporal import DATE_FORMAT_IN_JSON, MAX_DATE_IN_DATA, N_DAYS_DATA_ANALYSIS_DEFAULT
-from long_term_uc.common.error_msgs import print_out_msg
+from long_term_uc.common.error_msgs import print_out_msg, uncoherent_param_stop
 from long_term_uc.utils.type_checker import apply_params_type_check
 
 
@@ -20,8 +21,6 @@ ANALYSIS_TYPES = AnalysisTypes()
 AVAILABLE_ANALYSIS_TYPES = list(ANALYSIS_TYPES.__dict__.values())
 AVAILABLE_DATA_TYPES = list(DatatypesNames.__annotations__.values())
 DATA_SUBTYPE_KEY = "data_subtype"  # TODO[Q2OJ]: cleaner way to set/get it?
-ORDERED_DATA_ANALYSIS_ATTRS = ["analysis_type", "data_type", "data_subtype", "country", 
-                               "year", "climatic_year"]  # TODO[Q2OJ]: cleaner way to set/get it? (with data_subtype in 3rd pos)
 RAW_TYPES_FOR_CHECK = {"analysis_type": "str", "data_type": "str", "data_subtype": "str", 
                        "country": "str", "year": "int", "climatic_year": "int"}
 
@@ -74,10 +73,33 @@ class DataAnalysis:
                 self.uc_period_end = min(MAX_DATE_IN_DATA, self.period_start + timedelta(days=N_DAYS_DATA_ANALYSIS_DEFAULT))
             else:
                 self.period_end = datetime.strptime(self.period_end, DATE_FORMAT_IN_JSON)
-                if self.period_end <= self.period_start:
-                    print_out_msg(msg_level="error", 
-                                  msg=f"{self.period_end.strftime(DATE_FORMAT_IN_JSON)} before {self.period_start.strftime(DATE_FORMAT_IN_JSON)} -> STOP")
-                    sys.exit(1)
+
+    def coherence_check(self, eraa_data_descr: ERAADatasetDescr):
+        errors_list = []
+        # check that analysis type is in the list of allowed values
+        if self.analysis_type not in AVAILABLE_ANALYSIS_TYPES:
+            errors_list.append(f"Unknown data analysis type {self.analysis_type}")
+        # check country
+        if self.country not in eraa_data_descr.available_countries:
+            errors_list.append(f"Unknown selected country: {self.country}")
+
+        # check TY and CY
+        if self.year not in eraa_data_descr.available_target_years:
+            errors_list.append(f"Unknown target year {self.year}")
+        if self.climatic_year not in eraa_data_descr.available_climatic_years \
+                 and self.climatic_year not in eraa_data_descr.available_climatic_years_stress_test:
+            errors_list.append(f"Unknown climatic year {self.climatic_year}")
+
+        # coherence of start and end period
+        if self.period_end <= self.period_start:
+            errors_list.append(f"{self.period_end.strftime(DATE_FORMAT_IN_JSON)} before {self.period_start.strftime(DATE_FORMAT_IN_JSON)}")
+
+        # stop if any error
+        if len(errors_list) > 0:
+            uncoherent_param_stop(param_errors=errors_list)
+        else:
+            print_out_msg(msg_level="info", msg="Input data analysis PARAMETERS ARE COHERENT!")
+            print_out_msg(msg_level="info", msg=f"ANALYSIS CAN START with parameters: {str(self)}")
 
     def get_full_datatype(self) -> tuple:
         if self.data_subtype is None:
